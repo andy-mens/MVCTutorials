@@ -1,0 +1,205 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop-up Box Example</title>
+    <style>
+        /* Basic styling for the body */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        /* Styles for the overlay (darkens the background) */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure it's on top of other content */
+            /* Initially hidden, will be shown with JavaScript */
+            display: none;
+        }
+
+        /* Styles for the pop-up box itself */
+        .popup-box {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 90%;
+            max-width: 400px; /* Limit the maximum width */
+            position: relative;
+            transform: translateY(-50px); /* Initial slight offset for animation */
+            opacity: 0; /* Initially invisible for animation */
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* Smooth transition for appearance */
+        }
+
+        /* Styles for when the pop-up is active */
+        .overlay.active .popup-box {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Pop-up header/title */
+        .popup-box h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        /* Pop-up content/message */
+        .popup-box p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        /* Container for the buttons */
+        .popup-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Space between buttons */
+        }
+
+        /* Styles for the buttons */
+        .popup-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s ease;
+        }
+
+            /* Primary button style */
+            .popup-button.primary {
+                background-color: #007bff;
+                color: #fff;
+            }
+
+                .popup-button.primary:hover {
+                    background-color: #0056b3;
+                }
+
+            /* Secondary button style */
+            .popup-button.secondary {
+                background-color: #6c757d;
+                color: #fff;
+            }
+
+                .popup-button.secondary:hover {
+                    background-color: #5a6268;
+                }
+
+        /* Close button (optional, often an 'X' in the corner) */
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+            .close-button:hover {
+                color: #333;
+            }
+
+        /* Styling for the button that triggers the pop-up */
+        #openPopupBtn {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+            #openPopupBtn:hover {
+                background-color: #218838;
+            }
+    </style>
+</head>
+<body>
+
+    <button id="openPopupBtn">Open Pop-up</button>
+
+    <div class="overlay" id="popupOverlay">
+        <div class="popup-box">
+            <button class="close-button" id="closePopupBtn">&times;</button>
+            <h2>Welcome!</h2>
+            <p>This is a sample pop-up box with some important information. You can customize its content and buttons.</p>
+            <div class="popup-buttons">
+                <button class="popup-button primary" id="confirmBtn">Confirm</button>
+                <button class="popup-button secondary" id="cancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get references to the elements
+        const openPopupBtn = document.getElementById('openPopupBtn');
+        const popupOverlay = document.getElementById('popupOverlay');
+        const closePopupBtn = document.getElementById('closePopupBtn');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        // Function to open the pop-up
+        function openPopup() {
+            popupOverlay.classList.add('active');
+        }
+
+        // Function to close the pop-up
+        function closePopup() {
+            popupOverlay.classList.remove('active');
+        }
+
+        // Event listeners
+        openPopupBtn.addEventListener('click', openPopup);
+        closePopupBtn.addEventListener('click', closePopup);
+        // Close pop-up if clicking outside the pop-up box (on the overlay)
+        popupOverlay.addEventListener('click', function(event) {
+            if (event.target === popupOverlay) {
+                closePopup();
+            }
+        });
+
+        // Example actions for the pop-up buttons
+        confirmBtn.addEventListener('click', function() {
+            alert('Confirm button clicked!');
+            closePopup();
+        });
+
+        cancelBtn.addEventListener('click', function() {
+            alert('Cancel button clicked!');
+            closePopup();
+        });
+    </script>
+
+</body>
+</html>
