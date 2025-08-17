@@ -1,0 +1,114 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model MVCTutorials.Models.Item
+
+@{
+    ViewData["Title"] = "Create New Item";
+}
+
+<h1>Create New Item</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <form>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" id="name-input" required/>
+                @* <span asp-validation-for="Name" class="text-danger"></span> *@
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" id="description-text" required></textarea>
+                @* <span asp-validation-for="Name" class="text-danger"></span> *@
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Price" class="control-label"></label>
+                <input type="number" asp-for="Price" class="form-control" id="price-input" required/>
+                @* <span asp-validation-for="Price" class="text-danger"></span> *@
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary mt-2" id="submit-btn"/>
+            </div>
+        </form>
+        <span class="text-success">Item added successfully!</span>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Create">Back to List</a>
+</div>
+
+<script>
+    const successMessage = document.querySelector('.text-success');
+    const form = document.querySelector('form');
+    const priceInput = document.getElementById('price-input');
+    const nameInput = document.getElementById('name-input');
+    const descriptionText = document.getElementById('description-text');
+    const submitButton = document.getElementById('submit-btn');
+
+    const validateForm = () => {
+        // Check if all fields are filled
+        return nameInput.value.trim() !== '' &&
+               descriptionText.value.trim() !== '' &&
+               priceInput.value.trim() !== '' &&
+               parseFloat(priceInput.value) > 0;
+    };
+
+    if (successMessage) {
+        successMessage.style.display = 'none'; // Hide the success message initially
+    }
+    // Show the success message when the form is submitted
+    form.addEventListener('submit', async function (event) {
+       event.preventDefault();
+       const formData = new FormData(form);
+       console.log('Form:', Object.fromEntries(formData.entries()));
+       submitButton.disabled = true; // Disable the submit button to prevent multiple submissions
+       submitButton.value = 'Submitting...Please wait...'; // Change button text to indicate submission in progress
+       submitButton.style.backgroundColor = 'gray'; // Change button color to indicate submission in progress
+
+       if(validateForm()) {
+           // Simulate a successful form submission
+           // Show the success message
+            const response = await fetch('/DatabaseCollections/AddToDb', {
+                method: 'POST',
+                body: formData,
+            });
+            const jsonResponse = await response.json();
+
+            if (jsonResponse.success) {
+                successMessage.style.display = 'block';
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+                form.reset(); // Reset the form fields
+
+               submitButton.disabled = false; // Disable the submit button to prevent multiple submissions
+               submitButton.value = 'Create'; // Change button text to indicate submission in progress
+               submitButton.style.backgroundColor = 'blue'; // Change button color to indicate submission in progress
+
+            } else {
+                console.error('Error adding item:', jsonResponse.message);
+            }
+            
+       } else {
+           successMessage.style.display = 'none'; // Hide the success message if form is invalid
+           alert('Please fill in all fields correctly.');
+       }
+       
+    });
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

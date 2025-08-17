@@ -1,7 +1,33 @@
+using MongoDB.Driver;
+using MVCTutorials.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.Configure<MongoDbSettings>(
+    builder.Configuration.GetSection("MongoDBSettings"));
+
+builder.Services.AddSingleton<IMongoClient>(s =>
+{
+    var settings = builder.Configuration.GetSection("MongoDBSettings").Get<MongoDbSettings>();
+    if (settings == null || string.IsNullOrEmpty(settings.ConnectionString))
+    {
+        throw new InvalidOperationException("MongoDBSettings or ConnectionString is not configured properly.");
+    }
+    return new MongoClient(settings.ConnectionString);
+});
+// Configure MongoDB settings from appsettings.json
+
+builder.Services.AddScoped<ItemService>();
+
+//builder.Services.AddSingleton<IMongoClient>(s =>
+//{
+//    var settings = builder.Configuration.GetSection("MongoDBSettings").Get<MongoDbSettings>();
+//    return new MongoClient(settings.ConnectionString);
+//});
+
 
 var app = builder.Build();
 

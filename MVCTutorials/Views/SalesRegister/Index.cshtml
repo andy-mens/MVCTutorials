@@ -26,6 +26,7 @@
                 <div id="order-summary">
                 </div>
                 <h4 id="order-grand-total">Grand total</h4>
+                <p id="payment-method">Payment method</p>
             </div>
             <button class="btn btn-primary mt-2" id="confirm-checkout">Confirm checkout</button>
         </div>
@@ -34,10 +35,10 @@
     <div class="container register-container">
         <h2 class="mb-4 text-center">Sales Register</h2>
 
- 
+        <div class="animated-box text-center mt-5" id="loading">LOADING...</div>
 
         <form id="salesForm">
-            <div class="row mb-3">
+            @* <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="customerName" class="form-label">Customer Name</label>
                     <input list="customerNames" type="text" class="form-control" id="customerName" required/>
@@ -67,7 +68,7 @@
                 </div>
                 <div class="col-md-4">
                     <label for="unitPrice" class="form-label">Unit Price</label>
-                    <input type="number" class="form-control" id="unitPrice" min="0" step="0.01" required />
+                    <input type="number" class="form-control" id="unitPrice" readonly />
                 </div>
                 <div class="col-md-4">
                     <label for="total" class="form-label">Total</label>
@@ -77,8 +78,19 @@
 
             <div class="d-grid gap-2 mb-4">
                 <button type="submit" class="btn btn-primary">Add to Register</button>
-            </div>
+            </div> *@
         </form>
+
+        <label for="payment-method">Payment Method:</label>
+        <select name="payment-method" id="payment-method-select">
+            <option value="cash">Cash</option>
+            <option value="insurance">Insurance</option>
+            <option value="momo">Momo</option>
+            <option value="momo+cash">Momo + Cash</option>
+            <option value="card">Card</option>
+            <option value="insurance+cash">Insurance + Cash</option>
+            <option value="card+cash">Card + Cash</option>
+        </select>
 
         <h4 class="mb-3">Sales Records</h4>
         <table class="table table-bordered table-striped">

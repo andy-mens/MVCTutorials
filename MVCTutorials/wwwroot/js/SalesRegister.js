@@ -1,68 +1,4 @@
 ﻿
-const quantityInput = document.getElementById('quantity');
-const unitPriceInput = document.getElementById('unitPrice');
-const totalInput = document.getElementById('total');
-const SALES_ITEMS_KEY = 'saleItems';
-localStorage.setItem(SALES_ITEMS_KEY, []); // Clear local storage on page load
-
-const customers = [ "Customer 1", "Customer 2", "Customer 3", "Customer 4" ];
-const items = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5" ];
-
-function updateTotal() {
-    const quantity = parseFloat(quantityInput.value) || 0;
-    const price = parseFloat(unitPriceInput.value) || 0;
-    totalInput.value = (quantity * price).toFixed(2);
-}
-
-quantityInput.addEventListener('input', updateTotal);
-unitPriceInput.addEventListener('input', updateTotal);
-
-document.getElementById('salesForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const customer = document.getElementById('customerName').value;
-    const product = document.getElementById('productName').value;
-    const quantity = quantityInput.value;
-    const unitPrice = unitPriceInput.value;
-    const total = totalInput.value;
-
-    customers.forEach(c => {
-        console.log(c);
-        console.log(customer);
-    });
-
-
-    const tableBody = document.getElementById('salesTableBody');
-    const row = document.createElement('tr');
-
-    row.innerHTML = `
-    <td>${product}</td>
-    <td>${quantity}</td>
-    <td>${parseFloat(unitPrice).toFixed(2)}</td>
-    <td>${total}</td>
-    `;
-
-    tableBody.appendChild(row);
-
-    // Reset form
-    document.getElementById('productName').value = '';
-    quantityInput.value = '';
-    totalInput.value = '';
-    unitPriceInput.value = '';
-
-    const newSaleItem = {
-        product: product,
-        quantity: quantity,
-        unitPrice: unitPrice,
-        total: total
-    };
-
-    let currentSaleItems = getSaleItems();
-    currentSaleItems.push(newSaleItem);
-    console.log('Current Sale Items:', currentSaleItems);
-    saveSaleItems(currentSaleItems);
-});
-
 // Get references to the elements
 const openPopupBtn = document.getElementById('openPopupBtn');
 const popupOverlay = document.getElementById('popupOverlay');
@@ -72,13 +8,19 @@ const cancelBtn = document.getElementById('cancelBtn');
 const orderSummaryElement = document.getElementById('order-summary');
 const orderGrandTotal = document.getElementById('order-grand-total');
 const orderSummaryContainerElement = document.getElementById('order-summary-container');
+const formElement = document.getElementById('salesForm');
+const SALES_ITEMS_KEY = 'saleItems';
+//let _ITEMS = [];
+//getAllItemsFromDb();
 
+//console.log('Items from DB:', _ITEMS);
 // Function to open the pop-up
 function openPopup() {
     popupOverlay.classList.add('active');
 
     //populate the pop up window
     document.getElementById('invoice-customer-name').innerHTML = document.getElementById('customerName').value;
+    document.getElementById('payment-method').innerHTML = document.getElementById("payment-method-select").value;
     let orderSummaryString = '';
     let grandTotal = 0;
 
@@ -101,7 +43,7 @@ function openPopup() {
                         
                     </div>`;
 
-            grandTotal += Number(item.total);
+                grandTotal += Number(item.total);
             //grandTotal = parseFloat(grandTotal).toFixed(2);
         });
 
@@ -177,6 +119,166 @@ function getSaleItems() {
     }
 }
 
-document.getElementById("confirm-checkout").addEventListener("click", () => {
-    print(orderSummaryContainerElement.innerHTML);
+    document.getElementById("confirm-checkout").addEventListener("click", () => {
+        print(orderSummaryContainerElement.innerHTML);
 });
+
+LoadRegister();
+
+async function LoadRegister() {
+    let items = [];
+    let options = '';
+    const response = await fetch('/DatabaseCollections/GetAllItems');
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+
+    if (data.success) {
+        items = data._items;
+        console.log(items);
+        //Set the inner html of the form with the items as the options.
+        //else show an error message
+        items.forEach(item => {
+            console.log(item.name);
+            options += `<option>${item.name}</option>
+            `;
+        });
+
+        let salesFormInnerHtml = `<div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="customerName" class="form-label">Customer Name</label>
+                    <input list="customerNames" type="text" class="form-control" id="customerName" required/>
+                    <datalist id="customerNames">
+                        @foreach (string name in customers)
+                        {
+                            <option>@name</option>
+                        }
+                    </datalist>
+                </div>
+                <div class="col-md-6">
+                    <label for="productName" class="form-label">Product</label>
+                    <input list="items" type="text" class="form-control" id="productName" required />
+                    <datalist id="items">
+                        ${options}
+                    </datalist>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="quantity" class="form-label">Quantity</label>
+                    <input type="number" class="form-control" id="quantity" min="1" value="1" required />
+                </div>
+                <div class="col-md-4">
+                    <label for="unitPrice" class="form-label">Unit Price</label>
+                    <input type="number" class="form-control" id="unitPrice" readonly/>
+                </div>
+                <div class="col-md-4">
+                    <label for="total" class="form-label">Total</label>
+                    <input type="number" class="form-control" id="total" readonly />
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 mb-4">
+                <button type="submit" class="btn btn-primary">Add to Register</button>
+            </div>`;
+
+        formElement.innerHTML = salesFormInnerHtml;
+        salesRegisterLogic(items);
+        document.getElementById('loading').style.display = 'none';
+    } else {
+        formElement.innerHTML = "Error...Reload";
+    }
+    
+}
+
+function updateTotal() {
+    const quantityInput = document.getElementById('quantity');
+    const unitPriceInput = document.getElementById('unitPrice');
+    const totalInput = document.getElementById('total');
+    const quantity = parseFloat(quantityInput.value) || 0;
+    const price = parseFloat(unitPriceInput.value) || 0;
+    totalInput.value = (quantity * price).toFixed(2);
+}
+
+
+function salesRegisterLogic(items) {
+    const quantityInput = document.getElementById('quantity');
+    const unitPriceInput = document.getElementById('unitPrice');
+    const totalInput = document.getElementById('total');
+    const productNameInput = document.getElementById('productName');
+    const SALES_ITEMS_KEY = 'saleItems';
+    localStorage.setItem(SALES_ITEMS_KEY, []); // Clear local storage on page load
+
+    //const customers = [ "Customer 1", "Customer 2", "Customer 3", "Customer 4" ];
+    //const items = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5" ];
+
+    quantityInput.addEventListener('input', updateTotal);
+    //unitPriceInput.addEventListener('input', updateTotal);
+
+    productNameInput.addEventListener('input', () => {
+        items.forEach(item => {
+            if (productNameInput.value === item.name) {
+                console.log("Item in database");
+                unitPriceInput.value = item.price;
+                updateTotal();
+            } 
+        });
+    });
+
+    let validInputResponse = false;
+    document.getElementById('salesForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        
+        const customer = document.getElementById('customerName').value;
+        const product = document.getElementById('productName').value;
+        const quantity = quantityInput.value;
+        const unitPrice = unitPriceInput.value;
+        const total = totalInput.value;
+
+        items.forEach(item => {
+            if (product === item.name) {
+                validInputResponse = true;
+            }
+        });
+        //const validateInputResponse = await fetch(`/SalesRegister/add?customerName=${customer}&item=${product}`);
+        //console.log(validateInputResponse.json());
+        if (!validInputResponse) {
+            alert("Invalid product selected. Please select a valid product.");
+            return;
+        }
+
+        const tableBody = document.getElementById('salesTableBody');
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>${product}</td>
+            <td>${quantity}</td>
+            <td>${parseFloat(unitPrice).toFixed(2)}</td>
+            <td>${total}</td>
+            `;
+
+        tableBody.appendChild(row);
+
+        // Reset form
+        document.getElementById('productName').value = '';
+        quantityInput.value = '';
+        totalInput.value = '';
+        unitPriceInput.value = '';
+
+        const newSaleItem = {
+            product: product,
+            quantity: quantity,
+            unitPrice: unitPrice,
+            total: total
+        };
+
+        let currentSaleItems = getSaleItems();
+        currentSaleItems.push(newSaleItem);
+        console.log('Current Sale Items:', currentSaleItems);
+        saveSaleItems(currentSaleItems);
+        validInputResponse = false; // Reset the validation flag
+    });
+}

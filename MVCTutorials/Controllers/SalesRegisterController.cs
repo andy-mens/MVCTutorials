@@ -16,11 +16,10 @@ namespace MVCTutorials.Controllers
             return View();
         }
 
-        public IActionResult validateCustomerAndProduct(string customerName, string item)
-        {
-            // This action method is intentionally left empty.
-            // It can be used to display details of a specific sales register entry in the future.
-            return View();
-        }
+        //public IActionResult add(string customerName, string item)
+        //{
+            
+
+        //}
     }
 }
